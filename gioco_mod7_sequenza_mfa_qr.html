@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>MOD7 – Sequenza: MFA Fatigue e QR Phishing</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif}
+body{background:linear-gradient(135deg,#b71c1c,#c62828,#e53935);min-height:100vh;overflow:hidden;display:flex;justify-content:center;align-items:center}
+.container{width:800px;height:550px;background:#fff;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.5);overflow:hidden;display:flex;flex-direction:column}
+.header{background:linear-gradient(135deg,#b71c1c,#c62828);color:#fff;padding:11px 18px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.header h1{font-size:15px;font-weight:700}.header p{font-size:11px;opacity:.8;margin-top:1px}
+button{padding:6px 12px;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;font-family:inherit}
+.btn-white{background:#fff;color:#b71c1c}.btn-white:hover{background:#ffebee}
+.btn-outline{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.4)}.btn-outline:hover{background:rgba(255,255,255,.25)}
+.btn-group{display:flex;gap:8px}
+.hidden{display:none!important}
+.page{flex:1;display:flex;flex-direction:column;min-height:0}
+
+/* Intro */
+.instr{padding:18px 26px;overflow-y:auto;flex:1}
+.instr h2{font-size:22px;color:#b71c1c;margin-bottom:10px}
+.instr p{font-size:16px;line-height:1.6;color:#444;margin-bottom:8px}
+.how-grid{display:flex;gap:10px;margin:14px 0}
+.how-step{flex:1;background:#ffebee;border-radius:8px;padding:10px;text-align:center;font-size:16px;color:#b71c1c;font-weight:600;line-height:1.5}
+.how-step .num{font-size:22px;display:block;margin-bottom:4px}
+.start-btn{background:linear-gradient(135deg,#b71c1c,#c62828);color:#fff;padding:11px 32px;font-size:14px;border-radius:8px;display:block;margin:16px auto 0;cursor:pointer;border:none;font-weight:600}
+.start-btn:hover{transform:translateY(-2px)}
+
+/* Game */
+.status-bar{display:flex;align-items:center;gap:16px;padding:7px 14px;background:#f5f5f5;border-bottom:1px solid #e0e0e0;flex-shrink:0;font-size:12px;color:#555}
+.round-badge{background:#b71c1c;color:#fff;border-radius:20px;padding:2px 12px;font-size:12px;font-weight:700}
+.task-bar{padding:9px 16px;background:#ffebee;border-bottom:1px solid #ffcdd2;font-size:12px;color:#b71c1c;line-height:1.5;flex-shrink:0}
+.content{flex:1;display:flex;overflow:hidden;min-height:0}
+.pool-col{flex:1;padding:10px 12px;overflow-y:auto;border-right:1px solid #e0e0e0;background:#fafafa;display:flex;flex-direction:column;gap:6px}
+.pool-col h2,.seq-col h2{font-size:11.5px;font-weight:700;color:#b71c1c;margin-bottom:2px}
+.step-chip{background:#fff;border:2px solid #ef9a9a;border-radius:8px;padding:7px 9px;font-size:14px;color:#333;line-height:1.35;cursor:grab;display:flex;gap:6px;align-items:center}
+.step-chip:hover{border-color:#c62828}
+.step-chip.dragging{opacity:.4}
+.seq-col{flex:1.1;padding:10px 12px;display:flex;flex-direction:column;gap:6px;overflow-y:auto}
+.slot{min-height:38px;border:2px dashed #ccc;border-radius:7px;padding:6px 8px;display:flex;align-items:center;gap:8px;font-size:11px;background:#fafafa}
+.slot .num{font-weight:700;color:#b71c1c;width:16px;flex-shrink:0}
+.slot.filled{border-style:solid;border-color:#c62828;background:#fff}
+.slot.correct{border-color:#2e7d32;background:#e8f5e9}
+.slot.wrong{border-color:#c62828;background:#ffebee}
+.slot .rm{margin-left:auto;cursor:pointer;color:#999;font-weight:700;padding:0 4px}
+.slot .rm:hover{color:#c62828}
+.check-btn{background:linear-gradient(135deg,#b71c1c,#c62828);color:#fff;padding:8px 20px;font-size:14px;border-radius:7px;border:none;cursor:pointer;font-weight:700;align-self:flex-start;margin-top:2px}
+.check-btn:disabled{opacity:.4;cursor:default}
+.round-feedback{font-size:11px;padding:7px 9px;border-radius:6px;margin-top:2px}
+.round-feedback.ok{background:#e8f5e9;color:#1b5e20}
+.round-feedback.ko{background:#ffebee;color:#b71c1c}
+
+/* Result */
+.result{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#b71c1c,#c62828)}
+.result h2{color:#fff;font-size:24px;font-weight:700}
+.result .emoji{font-size:54px}
+.result p{color:#ffcdd2;font-size:16px;text-align:center;max-width:420px;line-height:1.6}
+.result-stats{display:flex;gap:10px}
+.result-stat{background:rgba(255,255,255,.15);border-radius:8px;padding:8px 18px;color:#fff;font-size:18px;font-weight:700;text-align:center}
+.result-stat span{display:block;font-size:18px;opacity:.8;margin-bottom:2px}
+.btn-again{background:#fff;color:#b71c1c;padding:9px 26px;font-size:13px;border-radius:8px;font-weight:700;margin-top:4px;cursor:pointer;border:none}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div><h1>🔢 Ordina i Passi – MFA Fatigue e QR Phishing</h1><p>Modulo 7 – QR phishing e MFA fatigue</p></div>
+    <div class="btn-group">
+      <button class="btn-outline" onclick="resetGame()">🔄 Rigioca</button>
+      <button class="btn-white" onclick="window.close()">Torna al corso</button>
+    </div>
+  </div>
+
+  <div id="instrPage" class="page">
+    <div class="instr">
+      <h2>Nel momento giusto, l'ordine dei passi conta</h2>
+      <p>Ti trovi davanti a due situazioni reali: una raffica di notifiche MFA che non hai richiesto e un QR code sospetto in un luogo pubblico. In entrambi i casi esiste un ordine di azioni corretto da seguire.</p>
+      <p>Trascina i 5 passi di ogni scenario nella sequenza, dal primo all'ultimo, poi verifica l'ordine.</p>
+      <div class="how-grid">
+        <div class="how-step"><span class="num">📥</span>Leggi lo scenario e i passi disponibili</div>
+        <div class="how-step"><span class="num">✋</span>Trascinali in ordine (o clicca ogni passo)</div>
+        <div class="how-step"><span class="num">✅</span>Clicca "Verifica ordine" per lo scenario</div>
+      </div>
+      <button class="start-btn" onclick="startGame()">▶ Inizia</button>
+    </div>
+  </div>
+
+  <div id="gamePage" class="page hidden">
+    <div class="status-bar">
+      <span class="round-badge">Scenario <span id="roundNum">1</span>/2</span>
+      <span style="margin-left:auto;font-size:11px;color:#888">Trascina o clicca i passi per aggiungerli alla sequenza</span>
+    </div>
+    <div class="task-bar" id="taskBar"></div>
+    <div class="content">
+      <div class="pool-col" id="poolCol">
+        <h2>📥 Passi disponibili</h2>
+      </div>
+      <div class="seq-col" id="seqCol">
+        <h2>🔢 Sequenza corretta</h2>
+      </div>
+    </div>
+  </div>
+
+  <div id="resultPage" class="page hidden">
+    <div class="result">
+      <div class="emoji" id="resEmoji">🏆</div>
+      <h2 id="resTitle">Ottimo lavoro!</h2>
+      <p id="resText">Hai ricostruito correttamente le sequenze.</p>
+      <div class="result-stats">
+        <div class="result-stat"><span>Passi corretti</span><span id="resCorrect">0/10</span></div>
+      </div>
+      <button class="btn-again" onclick="resetGame()">🔄 Rigioca</button>
+    </div>
+  </div>
+</div>
+<script>
+const ROUNDS=[
+  {
+    title:"Scenario 1 — Raffica di notifiche MFA non richieste",
+    task:"Il tuo telefono riceve diverse notifiche push di autenticazione che non hai richiesto tu (MFA fatigue). Metti in ordine i passi corretti da seguire.",
+    steps:[
+      {id:1,icon:"🚫",text:"Non approvare nessuna delle notifiche push non richieste"},
+      {id:2,icon:"🔑",text:"Cambia subito la password dell'account coinvolto"},
+      {id:3,icon:"🔍",text:"Controlla gli accessi recenti effettuati sull'account"},
+      {id:4,icon:"📣",text:"Segnala l'accaduto al servizio IT o al referente sicurezza"},
+      {id:5,icon:"🛡️",text:"Attiva un metodo MFA più robusto, come una chiave di sicurezza fisica"},
+    ],
+    correct:[1,2,3,4,5]
+  },
+  {
+    title:"Scenario 2 — QR code sospetto in un luogo pubblico",
+    task:"Vedi un QR code su un cartello in un parcheggio o in un locale pubblico e vuoi inquadrarlo. Metti in ordine i passi corretti da seguire prima di agire.",
+    steps:[
+      {id:1,icon:"🔎",text:"Verifica che l'adesivo del QR code non sia sovrapposto a quello originale"},
+      {id:2,icon:"🚫",text:"Non aprire automaticamente il link mostrato dalla fotocamera"},
+      {id:3,icon:"🌐",text:"Controlla per intero l'indirizzo del sito a cui rimanda il link"},
+      {id:4,icon:"🔒",text:"Non inserire credenziali o dati di pagamento sulla pagina aperta"},
+      {id:5,icon:"📣",text:"Segnala il QR code sospetto al gestore del luogo o al servizio IT"},
+    ],
+    correct:[1,2,3,4,5]
+  }
+];
+
+let roundIdx=0,placedOrder=[],totalCorrect=0,roundLocked=false;
+
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function startGame(){
+  document.getElementById('instrPage').classList.add('hidden');
+  document.getElementById('gamePage').classList.remove('hidden');
+  roundIdx=0;totalCorrect=0;
+  loadRound();
+}
+function loadRound(){
+  roundLocked=false;
+  placedOrder=[];
+  const r=ROUNDS[roundIdx];
+  document.getElementById('roundNum').textContent=roundIdx+1;
+  document.getElementById('taskBar').textContent='📌 '+r.task;
+  renderPool();
+  renderSeq();
+}
+function currentSteps(){return ROUNDS[roundIdx].steps;}
+function unplacedSteps(){return currentSteps().filter(s=>!placedOrder.includes(s.id));}
+
+function renderPool(){
+  const pool=document.getElementById('poolCol');
+  pool.querySelectorAll('.step-chip').forEach(c=>c.remove());
+  const order=shuffle(unplacedSteps());
+  order.forEach(s=>{
+    const c=document.createElement('div');
+    c.className='step-chip';
+    c.draggable=true;
+    c.dataset.id=s.id;
+    c.innerHTML=`<span>${s.icon}</span><span>${s.text}</span>`;
+    c.onclick=()=>addToSeq(s.id);
+    c.addEventListener('dragstart',e=>{c.classList.add('dragging');e.dataTransfer.setData('text/plain',s.id);});
+    c.addEventListener('dragend',()=>c.classList.remove('dragging'));
+    pool.appendChild(c);
+  });
+}
+function renderSeq(){
+  const seq=document.getElementById('seqCol');
+  seq.querySelectorAll('.slot,.check-btn,.round-feedback').forEach(el=>el.remove());
+  const n=currentSteps().length;
+  for(let i=0;i<n;i++){
+    const slot=document.createElement('div');
+    slot.className='slot';
+    slot.dataset.pos=i;
+    const stepId=placedOrder[i];
+    if(stepId){
+      const s=currentSteps().find(x=>x.id===stepId);
+      slot.classList.add('filled');
+      slot.innerHTML=`<span class="num">${i+1}.</span><span>${s.icon}</span><span>${s.text}</span><span class="rm" data-id="${stepId}">✕</span>`;
+    }else{
+      slot.innerHTML=`<span class="num">${i+1}.</span><span style="color:#999">Trascina qui un passo</span>`;
+    }
+    slot.addEventListener('dragover',e=>{if(!roundLocked)e.preventDefault();});
+    slot.addEventListener('drop',e=>{
+      e.preventDefault();
+      if(roundLocked)return;
+      const id=parseInt(e.dataTransfer.getData('text/plain'));
+      if(id)placeAt(id,i);
+    });
+    seq.appendChild(slot);
+  }
+  seq.querySelectorAll('.rm').forEach(rm=>{
+    rm.onclick=(e)=>{e.stopPropagation();if(roundLocked)return;removeFromSeq(parseInt(rm.dataset.id));};
+  });
+  const btn=document.createElement('button');
+  btn.className='check-btn';
+  btn.textContent='✅ Verifica ordine';
+  btn.disabled=placedOrder.length<n||roundLocked;
+  btn.onclick=checkSequence;
+  seq.appendChild(btn);
+}
+function addToSeq(id){
+  if(roundLocked||placedOrder.includes(id))return;
+  const firstEmpty=placedOrder.length;
+  if(firstEmpty>=currentSteps().length)return;
+  placedOrder[firstEmpty]=id;
+  renderPool();renderSeq();
+}
+function placeAt(id,pos){
+  if(roundLocked)return;
+  placedOrder=placedOrder.filter(x=>x!==id);
+  placedOrder[pos]=id;
+  renderPool();renderSeq();
+}
+function removeFromSeq(id){
+  placedOrder=placedOrder.filter(x=>x!==id);
+  renderPool();renderSeq();
+}
+function checkSequence(){
+  if(roundLocked)return;
+  roundLocked=true;
+  const correctSeq=ROUNDS[roundIdx].correct;
+  let roundCorrect=0;
+  document.querySelectorAll('#seqCol .slot').forEach((slot,i)=>{
+    const rm=slot.querySelector('.rm');
+    if(rm)rm.remove();
+    if(placedOrder[i]===correctSeq[i]){slot.classList.add('correct');roundCorrect++;}
+    else slot.classList.add('wrong');
+  });
+  totalCorrect+=roundCorrect;
+  const fb=document.createElement('div');
+  fb.className='round-feedback '+(roundCorrect===correctSeq.length?'ok':'ko');
+  fb.textContent=roundCorrect===correctSeq.length
+    ? '✅ Sequenza corretta! Passi in ordine: '+roundCorrect+'/'+correctSeq.length
+    : '⚠️ Passi in ordine corretto: '+roundCorrect+'/'+correctSeq.length+'. In verde le posizioni giuste, in rosso quelle da rivedere.';
+  document.getElementById('seqCol').appendChild(fb);
+  document.querySelector('.check-btn').remove();
+  setTimeout(nextRoundOrEnd,2600);
+}
+function nextRoundOrEnd(){
+  if(roundIdx<ROUNDS.length-1){
+    roundIdx++;
+    loadRound();
+  }else{
+    endGame();
+  }
+}
+function endGame(){
+  const maxScore=ROUNDS.reduce((a,r)=>a+r.correct.length,0);
+  const pct=totalCorrect/maxScore;
+  document.getElementById('resCorrect').textContent=totalCorrect+'/'+maxScore;
+  const emojiEl=document.getElementById('resEmoji'),titleEl=document.getElementById('resTitle'),textEl=document.getElementById('resText');
+  if(pct>=0.8){
+    emojiEl.textContent='🏆';titleEl.textContent='Ottimo lavoro!';
+    textEl.textContent="Sai come reagire a una raffica di notifiche MFA e a un QR code sospetto: non agire d'istinto, verifica e segnala. È esattamente quello che serve in questi casi.";
+  }else if(pct>=0.5){
+    emojiEl.textContent='👍';titleEl.textContent='Buon lavoro';
+    textEl.textContent="Hai ricostruito buona parte delle sequenze. Ricorda: davanti a notifiche MFA insistenti o a un QR code sconosciuto, il primo passo è sempre non agire d'istinto.";
+  }else{
+    emojiEl.textContent='💪';titleEl.textContent='Riprova';
+    textEl.textContent="Rigioca e ripensa all'ordine logico: prima blocca l'azione automatica, poi verifica, infine segnala. Vale sia per l'MFA fatigue sia per i QR code sospetti.";
+  }
+  document.getElementById('gamePage').classList.add('hidden');
+  document.getElementById('resultPage').classList.remove('hidden');
+}
+function resetGame(){
+  document.getElementById('resultPage').classList.add('hidden');
+  document.getElementById('gamePage').classList.add('hidden');
+  document.getElementById('instrPage').classList.remove('hidden');
+}
+</script>
+</body>
+</html>
